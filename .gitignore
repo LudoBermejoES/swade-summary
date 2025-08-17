@@ -1,0 +1,29 @@
+# Debug logs
+debug.log
+
+# VS Code workspace files
+*.code-workspace
+
+# Node modules (if applicable)
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp

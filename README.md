@@ -26,7 +26,8 @@ A Foundry VTT module for the SWADE (Savage Worlds Adventure Edition) system that
    - You can mix names and IDs
    - Character names are case-insensitive
 4. Choose your preferred **Button Position** on screen
-5. Toggle **Enable Summaries** to show/hide the floating button
+5. Select your preferred **UI Style** (Default or Supers)
+6. Toggle **Enable Summaries** to show/hide the floating button
 
 ## Usage
 
@@ -41,6 +42,15 @@ The module supports two ways to identify characters:
 - **By ID**: Use the Foundry actor ID (found in the actor's data)
 
 Example configuration: `Paladin Bob, Wizard Alice, 8x7y9z1a2b3c4d5e`
+
+## UI Styles
+
+The module includes two visual themes:
+
+- **Default**: Clean, standard SWADE styling with neutral colors
+- **Supers**: Comic book-inspired theme with vibrant colors, perfect for superhero campaigns using the SWADE Supers Companion
+
+Choose your preferred style in the module settings to match your campaign's theme.
 
 ## Author
 
