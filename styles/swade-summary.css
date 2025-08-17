@@ -1,0 +1,147 @@
+/* SWADE Summary Module Styles */
+
+/* Floating Button */
+.swade-summary-float-btn {
+    position: fixed;
+    z-index: 10000;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.swade-summary-float-btn:hover {
+    opacity: 1;
+}
+
+.swade-summary-float-btn button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #4b4b4b;
+    color: white;
+    border: 2px solid #999;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.swade-summary-float-btn button:hover {
+    background: #666;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* Button Positions */
+.swade-summary-float-btn.top-left {
+    top: 20px;
+    left: 20px;
+}
+
+.swade-summary-float-btn.top-right {
+    top: 20px;
+    right: 20px;
+}
+
+.swade-summary-float-btn.bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+.swade-summary-float-btn.bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+/* Summary Content */
+.swade-summary-content {
+    padding: 15px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Characters Grid Layout */
+.characters-grid {
+    display: grid;
+    gap: 20px;
+}
+
+/* Grid layouts for different column counts */
+.characters-grid.cols-1 {
+    grid-template-columns: 1fr;
+}
+
+.characters-grid.cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.characters-grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 800px) {
+    .characters-grid.cols-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .characters-grid.cols-2,
+    .characters-grid.cols-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.character-card {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f9f9f9;
+}
+
+.character-card h3 {
+    margin-top: 0;
+    color: #4b4b4b;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+    font-size: 18px;
+}
+
+.character-section {
+    margin-bottom: 15px;
+}
+
+.character-section h4 {
+    margin: 10px 0 5px 0;
+    color: #666;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.character-section ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.character-section li {
+    margin-bottom: 3px;
+    font-size: 13px;
+    color: #333;
+}
+
+.character-card p em {
+    color: #888;
+    font-style: italic;
+}
+
+/* No characters message */
+.no-characters-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+    font-style: italic;
+    grid-column: 1 / -1;
+}

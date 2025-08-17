@@ -1,0 +1,41 @@
+{
+  "id": "swade-summary",
+  "title": "SWADE Summary",
+  "description": "A summary module for the SWADE system that provides character and game information summaries",
+  "authors": [
+    {
+      "name": "Ludo Bermejo",
+      "email": "ludobermejo@gmail.com"
+    }
+  ],
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": 12,
+    "verified": 13
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "swade",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
+  "esmodules": [
+    "swade-summary.js"
+  ],
+  "styles": [
+    "styles/swade-summary.css"
+  ],
+  "templates": [
+    "templates/character-summary.hbs"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ]
+}

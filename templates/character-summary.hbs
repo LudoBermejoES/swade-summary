@@ -1,0 +1,41 @@
+<div class="swade-summary-content">
+    <div class="characters-grid {{columnsClass}}">
+        {{#each characters}}
+        <div class="character-card">
+            <h3>{{name}}</h3>
+            
+            {{#if edges}}
+            <div class="character-section">
+                <h4>{{localize "swade-summary.ui.edges"}}</h4>
+                <ul>
+                    {{#each edges}}
+                    <li>{{name}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+            {{/if}}
+            
+            {{#if hindrances}}
+            <div class="character-section">
+                <h4>{{localize "swade-summary.ui.hindrances"}}</h4>
+                <ul>
+                    {{#each hindrances}}
+                    <li>{{name}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+            {{/if}}
+            
+            {{#unless (or edges hindrances)}}
+            <p><em>{{localize "swade-summary.ui.no-edges-hindrances"}}</em></p>
+            {{/unless}}
+        </div>
+        {{/each}}
+        
+        {{#unless characters}}
+        <div class="no-characters-message">
+            <p><em>{{localize "swade-summary.ui.no-characters-selected"}}</em></p>
+        </div>
+        {{/unless}}
+    </div>
+</div>
