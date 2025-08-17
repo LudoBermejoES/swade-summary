@@ -144,13 +144,14 @@ class SWADESummary {
             classes: [`swade-summary-dialog`, `cols-${charactersPerRow}`]
         });
         
-        // Add event listeners after rendering
-        dialog.render(true);
+        // Hook into the dialog's activateListeners method to add our handlers
+        const originalActivateListeners = dialog.activateListeners.bind(dialog);
+        dialog.activateListeners = function(html) {
+            originalActivateListeners(html);
+            SWADESummary.addItemClickHandlers(this);
+        };
         
-        // Wait for the dialog to be rendered then add click handlers
-        setTimeout(() => {
-            this.addItemClickHandlers(dialog);
-        }, 100);
+        dialog.render(true);
     }
     
     static getSelectedCharacters() {
@@ -184,10 +185,24 @@ class SWADESummary {
                 id: edge.id
             }));
             
-            const hindrances = actor.items.filter(i => i.type === 'hindrance').map(hindrance => ({
-                name: hindrance.name,
-                id: hindrance.id
-            }));
+            const hindrances = actor.items.filter(i => i.type === 'hindrance').map(hindrance => {
+                // Try to get severity - check common SWADE properties
+                let severity = '';
+                if (hindrance.system?.major === true) {
+                    severity = ' (Major)';
+                } else if (hindrance.system?.major === false) {
+                    severity = ' (Minor)';
+                } else if (hindrance.system?.severity) {
+                    severity = ` (${hindrance.system.severity})`;
+                } else if (hindrance.system?.level) {
+                    severity = ` (${hindrance.system.level})`;
+                }
+                
+                return {
+                    name: hindrance.name + severity,
+                    id: hindrance.id
+                };
+            });
             
             return {
                 name: actor.name,
@@ -268,13 +283,56 @@ class SWADESummary {
         };
     }
     
+    static cleanDescription(description) {
+        if (!description) return 'No description available';
+        
+        let cleaned = description;
+        
+        // Remove HTML tags first if any
+        cleaned = cleaned.replace(/<[^>]*>/g, '');
+        
+        // Remove @UUID[...]{text} patterns, keeping only the display text
+        cleaned = cleaned.replace(/@UUID\[([^\]]+)\]\{([^}]+)\}/g, '$2');
+        
+        // Remove @Compendium[...]{text} patterns, keeping only the display text  
+        cleaned = cleaned.replace(/@Compendium\[([^\]]+)\]\{([^}]+)\}/g, '$2');
+        
+        // Remove other Foundry VTT text editor patterns like @ActorLink, @JournalEntry, etc.
+        cleaned = cleaned.replace(/@[A-Za-z]+\[([^\]]+)\]\{([^}]+)\}/g, '$2');
+        
+        // Remove any remaining @ patterns without curly braces
+        cleaned = cleaned.replace(/@[A-Za-z]+\[([^\]]+)\]/g, '');
+        
+        // Clean up any remaining brackets
+        cleaned = cleaned.replace(/\[([^\]]+)\]/g, '$1');
+        
+        // Clean up multiple spaces, line breaks, and normalize whitespace
+        cleaned = cleaned.replace(/\s+/g, ' ');
+        cleaned = cleaned.replace(/\n\s*\n/g, '\n');
+        cleaned = cleaned.trim();
+        
+        // If we ended up with empty text, provide fallback
+        if (!cleaned || cleaned.length === 0) {
+            return 'No description available';
+        }
+        
+        return cleaned;
+    }
+    
     static addItemClickHandlers(dialog) {
         const element = dialog.element;
-        if (!element) return;
+        if (!element) {
+            console.error('SWADE Summary | Dialog element not found');
+            return;
+        }
+        
+        const itemLinks = element.find('.item-link');
         
         // Add click handlers for item links
-        element.find('.item-link').on('click', (event) => {
+        itemLinks.on('click', (event) => {
             event.preventDefault();
+            event.stopPropagation();
+            
             const $target = $(event.currentTarget);
             const itemId = $target.data('item-id');
             const actorId = $target.data('actor-id');
@@ -296,8 +354,19 @@ class SWADESummary {
             return;
         }
         
-        // Get item description
-        const description = item.system.description || 'No description available';
+        // Get item description - check different possible locations
+        let rawDescription = 'No description available';
+        
+        if (item.system?.description) {
+            rawDescription = item.system.description;
+        } else if (item.data?.data?.description) {
+            rawDescription = item.data.data.description;
+        } else if (item.description) {
+            rawDescription = item.description;
+        }
+        
+        // Clean the description of UUID links and other Foundry patterns
+        const description = this.cleanDescription(rawDescription);
         
         // Create description dialog
         new Dialog({
