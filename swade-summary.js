@@ -54,6 +54,22 @@ Hooks.once('init', async function() {
         },
         default: 2
     });
+    
+    game.settings.register('swade-summary', 'ui-style', {
+        name: game.i18n.localize('swade-summary.settings.ui-style.name'),
+        hint: game.i18n.localize('swade-summary.settings.ui-style.hint'),
+        scope: 'client',
+        config: true,
+        type: String,
+        choices: {
+            'default': game.i18n.localize('swade-summary.ui.styles.default'),
+            'supers': game.i18n.localize('swade-summary.ui.styles.supers')
+        },
+        default: 'default',
+        onChange: (value) => {
+            SWADESummary.updateStylesheet(value);
+        }
+    });
 });
 
 Hooks.once('ready', async function() {
@@ -84,6 +100,9 @@ class SWADESummary {
     
     static init() {
         console.log('SWADE Summary | Initializing summary functionality');
+        
+        // Load the appropriate stylesheet
+        this.loadStylesheet();
         
         // Add floating summary button to screen
         this.addFloatingButton();
@@ -392,6 +411,41 @@ class SWADESummary {
             resizable: true,
             classes: ['swade-item-description']
         }).render(true);
+    }
+    
+    static loadStylesheet() {
+        const currentStyle = game.settings.get('swade-summary', 'ui-style');
+        this.updateStylesheet(currentStyle);
+    }
+    
+    static updateStylesheet(styleName) {
+        // Remove existing stylesheet if any
+        const existingLink = document.querySelector('link[data-swade-summary-style]');
+        if (existingLink) {
+            existingLink.remove();
+        }
+        
+        // Load the appropriate stylesheet
+        let stylePath;
+        switch(styleName) {
+            case 'supers':
+                stylePath = 'modules/swade-summary/styles/swade-summary-supers.css';
+                break;
+            case 'default':
+            default:
+                stylePath = 'modules/swade-summary/styles/swade-summary-default.css';
+                break;
+        }
+        
+        // Create and append the new stylesheet link
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = stylePath;
+        link.setAttribute('data-swade-summary-style', styleName);
+        document.head.appendChild(link);
+        
+        console.log(`SWADE Summary | Loaded ${styleName} stylesheet: ${stylePath}`);
     }
 }
 

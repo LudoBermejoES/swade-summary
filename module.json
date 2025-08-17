@@ -26,7 +26,7 @@
     "swade-summary.js"
   ],
   "styles": [
-    "styles/swade-summary.css"
+    "styles/swade-summary-default.css"
   ],
   "templates": [
     "templates/character-summary.hbs"

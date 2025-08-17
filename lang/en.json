@@ -16,6 +16,10 @@
       "characters-per-row": {
         "name": "Characters Per Row",
         "hint": "Number of character cards to display per row (1-3)"
+      },
+      "ui-style": {
+        "name": "UI Style",
+        "hint": "Choose the visual style for the character summary interface"
       }
     },
     "ui": {
@@ -34,7 +38,11 @@
       "concept": "Concept",
       "close": "Close",
       "no-edges-hindrances": "No edges or hindrances",
-      "no-characters-selected": "No characters selected. Please configure character names/IDs in module settings."
+      "no-characters-selected": "No characters selected. Please configure character names/IDs in module settings.",
+      "styles": {
+        "default": "Default",
+        "supers": "Supers"
+      }
     }
   }
 }
