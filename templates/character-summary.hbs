@@ -9,7 +9,7 @@
                 <h4>{{localize "swade-summary.ui.edges"}}</h4>
                 <ul>
                     {{#each edges}}
-                    <li>{{name}}</li>
+                    <li><span class="item-link edge-link" data-item-id="{{id}}" data-actor-id="{{../id}}">{{name}}</span></li>
                     {{/each}}
                 </ul>
             </div>
@@ -20,7 +20,7 @@
                 <h4>{{localize "swade-summary.ui.hindrances"}}</h4>
                 <ul>
                     {{#each hindrances}}
-                    <li>{{name}}</li>
+                    <li><span class="item-link hindrance-link" data-item-id="{{id}}" data-actor-id="{{../id}}">{{name}}</span></li>
                     {{/each}}
                 </ul>
             </div>

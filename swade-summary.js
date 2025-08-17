@@ -127,7 +127,7 @@ class SWADESummary {
         // Calculate dialog size based on characters per row
         const dialogSize = this.calculateDialogSize(charactersPerRow, selectedCharacters.length);
         
-        new Dialog({
+        const dialog = new Dialog({
             title: `${game.i18n.localize('swade-summary.ui.characters-summary')}`,
             content: content,
             buttons: {
@@ -136,10 +136,21 @@ class SWADESummary {
                     label: game.i18n.localize('swade-summary.ui.close')
                 }
             },
-            default: 'close',
+            default: 'close'
+        }, {
             width: dialogSize.width,
-            height: dialogSize.height
-        }).render(true);
+            height: dialogSize.height,
+            resizable: true,
+            classes: [`swade-summary-dialog`, `cols-${charactersPerRow}`]
+        });
+        
+        // Add event listeners after rendering
+        dialog.render(true);
+        
+        // Wait for the dialog to be rendered then add click handlers
+        setTimeout(() => {
+            this.addItemClickHandlers(dialog);
+        }, 100);
     }
     
     static getSelectedCharacters() {
@@ -193,30 +204,125 @@ class SWADESummary {
     }
     
     static calculateDialogSize(charactersPerRow, characterCount) {
-        // Base card width: ~280px, gap: 20px, padding: 30px
-        const cardWidth = 280;
+        // Adjust card width based on columns for better readability
+        let cardWidth;
+        switch(charactersPerRow) {
+            case 1:
+                cardWidth = 400; // Wide cards for single column
+                break;
+            case 2:
+                cardWidth = 320; // Medium cards for two columns
+                break;
+            case 3:
+                cardWidth = 280; // Narrower but still readable for three columns
+                break;
+        }
+        
         const gap = 20;
         const padding = 60; // 30px each side
         const buttonArea = 50; // Space for close button
         
         // Calculate width based on characters per row
-        const width = Math.min(
-            (cardWidth * charactersPerRow) + (gap * (charactersPerRow - 1)) + padding,
-            window.innerWidth * 0.9 // Max 90% of screen width
-        );
+        const calculatedWidth = (cardWidth * charactersPerRow) + (gap * (charactersPerRow - 1)) + padding;
+        const maxWidth = window.innerWidth * 0.95; // Allow up to 95% of screen width
+        const width = Math.min(calculatedWidth, maxWidth);
         
-        // Calculate height based on number of rows needed
+        // Calculate height based on number of rows needed - be more generous with height
         const rows = Math.ceil(characterCount / charactersPerRow);
-        const cardHeight = 200; // Approximate card height
-        const height = Math.min(
-            (cardHeight * rows) + (gap * (rows - 1)) + padding + buttonArea + 80, // +80 for title
-            window.innerHeight * 0.8 // Max 80% of screen height
-        );
+        let cardHeight;
+        
+        // Estimate card height based on average content
+        switch(charactersPerRow) {
+            case 1:
+                cardHeight = 300; // Taller for single wide cards
+                break;
+            case 2:
+                cardHeight = 280; // Medium height for two columns
+                break;
+            case 3:
+                cardHeight = 260; // Shorter but allow for text wrapping
+                break;
+        }
+        
+        const calculatedHeight = (cardHeight * rows) + (gap * (rows - 1)) + padding + buttonArea + 100; // +100 for title and margins
+        const maxHeight = window.innerHeight * 0.9; // Allow up to 90% of screen height
+        const height = Math.min(calculatedHeight, maxHeight);
+        
+        // Set minimum widths based on column count
+        let minWidth;
+        switch(charactersPerRow) {
+            case 1:
+                minWidth = 450;
+                break;
+            case 2:
+                minWidth = 700;
+                break;
+            case 3:
+                minWidth = 920; // Ensure 3 columns have enough space
+                break;
+        }
         
         return {
-            width: Math.max(width, 400), // Minimum width
-            height: Math.max(height, 300) // Minimum height
+            width: Math.max(width, minWidth),
+            height: Math.max(height, 350)
         };
+    }
+    
+    static addItemClickHandlers(dialog) {
+        const element = dialog.element;
+        if (!element) return;
+        
+        // Add click handlers for item links
+        element.find('.item-link').on('click', (event) => {
+            event.preventDefault();
+            const $target = $(event.currentTarget);
+            const itemId = $target.data('item-id');
+            const actorId = $target.data('actor-id');
+            
+            this.showItemDescription(itemId, actorId);
+        });
+    }
+    
+    static showItemDescription(itemId, actorId) {
+        const actor = game.actors.get(actorId);
+        if (!actor) {
+            ui.notifications.error('Actor not found');
+            return;
+        }
+        
+        const item = actor.items.get(itemId);
+        if (!item) {
+            ui.notifications.error('Item not found');
+            return;
+        }
+        
+        // Get item description
+        const description = item.system.description || 'No description available';
+        
+        // Create description dialog
+        new Dialog({
+            title: item.name,
+            content: `
+                <div class="item-description">
+                    <h3>${item.name}</h3>
+                    <div class="description-content">
+                        ${description}
+                    </div>
+                </div>
+            `,
+            buttons: {
+                close: {
+                    icon: '<i class="fas fa-times"></i>',
+                    label: game.i18n.localize('swade-summary.ui.close')
+                }
+            },
+            default: 'close'
+        }, {
+            width: 400,
+            height: 300,
+            resizable: true,
+            classes: ['swade-item-description']
+        }).render(true);
     }
 }
 
