@@ -63,6 +63,34 @@
     right: 20px;
 }
 
+/* Fixed position for draggable button */
+.swade-summary-float-btn.fixed {
+    /* Position will be set by JavaScript */
+}
+
+/* Dragging state - Supers Style */
+.swade-summary-float-btn.dragging {
+    cursor: move !important;
+    opacity: 0.8;
+    z-index: 10001;
+    transform: scale(1.1) rotate(2deg);
+}
+
+.swade-summary-float-btn.dragging button {
+    cursor: move !important;
+    box-shadow: 0 8px 25px rgba(25, 35, 126, 0.8), 
+                0 0 40px rgba(255, 215, 0, 0.7);
+}
+
+/* Cursor states for draggability */
+.swade-summary-float-btn button {
+    cursor: grab;
+}
+
+.swade-summary-float-btn button:active {
+    cursor: grabbing;
+}
+
 /* Dialog sizing - Override Foundry's default widths */
 .app.dialog.swade-summary-dialog.cols-1 {
     min-width: 450px !important;

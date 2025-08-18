@@ -36,9 +36,28 @@ Hooks.once('init', async function() {
             'top-left': 'Top Left',
             'top-right': 'Top Right',
             'bottom-left': 'Bottom Left',
-            'bottom-right': 'Bottom Right'
+            'bottom-right': 'Bottom Right',
+            'fixed': 'Fixed Position (Draggable)'
         },
         default: 'top-right'
+    });
+    
+    game.settings.register('swade-summary', 'button-position-x', {
+        name: 'Button X Position',
+        hint: 'X coordinate for fixed button position',
+        scope: 'client',
+        config: false,
+        type: Number,
+        default: 20
+    });
+    
+    game.settings.register('swade-summary', 'button-position-y', {
+        name: 'Button Y Position',
+        hint: 'Y coordinate for fixed button position',
+        scope: 'client',
+        config: false,
+        type: Number,
+        default: 20
     });
     
     game.settings.register('swade-summary', 'characters-per-row', {
@@ -87,7 +106,9 @@ Hooks.once('ready', async function() {
 
 // Update button position when setting changes
 Hooks.on('updateSetting', (setting) => {
-    if (setting.key === 'swade-summary.button-position') {
+    if (setting.key === 'swade-summary.button-position' || 
+        setting.key === 'swade-summary.button-position-x' || 
+        setting.key === 'swade-summary.button-position-y') {
         SWADESummary.updateButtonPosition();
     }
 });
@@ -97,6 +118,7 @@ Hooks.on('updateSetting', (setting) => {
  */
 class SWADESummary {
     static summaryButton = null;
+    static isDragging = false;
     
     static init() {
         console.log('SWADE Summary | Initializing summary functionality');
@@ -111,6 +133,9 @@ class SWADESummary {
     static addFloatingButton() {
         if (!game.settings.get('swade-summary', 'enable-summaries')) return;
         
+        // Only show button to GM
+        if (!game.user.isGM) return;
+        
         const position = game.settings.get('swade-summary', 'button-position');
         
         this.summaryButton = $(`
@@ -121,9 +146,19 @@ class SWADESummary {
             </div>
         `);
         
-        this.summaryButton.on('click', () => {
-            this.showSelectedCharactersSummary();
+        this.summaryButton.on('click', (e) => {
+            if (!this.isDragging) {
+                this.showSelectedCharactersSummary();
+            }
         });
+        
+        // Apply fixed position if needed
+        if (position === 'fixed') {
+            this.applyFixedPosition();
+        }
+        
+        // Make button draggable
+        this.makeDraggable();
         
         $('body').append(this.summaryButton);
     }
@@ -131,9 +166,172 @@ class SWADESummary {
     static updateButtonPosition() {
         if (this.summaryButton) {
             const position = game.settings.get('swade-summary', 'button-position');
-            this.summaryButton.removeClass('top-left top-right bottom-left bottom-right');
+            this.summaryButton.removeClass('top-left top-right bottom-left bottom-right fixed');
             this.summaryButton.addClass(position);
+            
+            if (position === 'fixed') {
+                this.applyFixedPosition();
+            } else {
+                // Remove fixed positioning styles
+                this.summaryButton.css({
+                    'position': '',
+                    'left': '',
+                    'top': '',
+                    'right': '',
+                    'bottom': ''
+                });
+            }
         }
+    }
+    
+    static applyFixedPosition() {
+        if (this.summaryButton) {
+            const x = game.settings.get('swade-summary', 'button-position-x');
+            const y = game.settings.get('swade-summary', 'button-position-y');
+            
+            this.summaryButton.css({
+                'position': 'fixed',
+                'left': `${x}px`,
+                'top': `${y}px`,
+                'right': 'auto',
+                'bottom': 'auto'
+            });
+        }
+    }
+    
+    static makeDraggable() {
+        if (!this.summaryButton) return;
+        
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+        
+        this.summaryButton.on('mousedown', (e) => {
+            if (e.which !== 1) return; // Only left mouse button
+            
+            isDragging = true;
+            this.isDragging = false; // Will be set to true if actually dragged
+            
+            const buttonOffset = this.summaryButton.offset();
+            startX = e.pageX;
+            startY = e.pageY;
+            startLeft = buttonOffset.left;
+            startTop = buttonOffset.top;
+            
+            // Prevent text selection
+            e.preventDefault();
+            
+            $(document).on('mousemove.drag', (e) => {
+                if (!isDragging) return;
+                
+                if (!this.isDragging) {
+                    this.isDragging = true; // Now we're actually dragging
+                    this.summaryButton.addClass('dragging');
+                }
+                
+                const deltaX = e.pageX - startX;
+                const deltaY = e.pageY - startY;
+                
+                const newLeft = startLeft + deltaX;
+                const newTop = startTop + deltaY;
+                
+                // Constrain to viewport
+                const maxLeft = $(window).width() - this.summaryButton.outerWidth();
+                const maxTop = $(window).height() - this.summaryButton.outerHeight();
+                
+                const constrainedLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                const constrainedTop = Math.max(0, Math.min(newTop, maxTop));
+                
+                this.summaryButton.css({
+                    'position': 'fixed',
+                    'left': `${constrainedLeft}px`,
+                    'top': `${constrainedTop}px`,
+                    'right': 'auto',
+                    'bottom': 'auto'
+                });
+            });
+            
+            $(document).on('mouseup.drag', () => {
+                this.summaryButton.removeClass('dragging');
+                
+                if (isDragging && this.isDragging) {
+                    // Save the new position and switch to fixed mode
+                    const finalOffset = this.summaryButton.offset();
+                    game.settings.set('swade-summary', 'button-position-x', finalOffset.left);
+                    game.settings.set('swade-summary', 'button-position-y', finalOffset.top);
+                    game.settings.set('swade-summary', 'button-position', 'fixed');
+                }
+                
+                isDragging = false;
+                // Reset isDragging flag after a small delay to prevent click event
+                setTimeout(() => { this.isDragging = false; }, 100);
+                
+                $(document).off('mousemove.drag mouseup.drag');
+            });
+        });
+        
+        // Also handle touch events for mobile devices
+        this.summaryButton.on('touchstart', (e) => {
+            const touch = e.originalEvent.touches[0];
+            isDragging = true;
+            this.isDragging = false;
+            
+            const buttonOffset = this.summaryButton.offset();
+            startX = touch.pageX;
+            startY = touch.pageY;
+            startLeft = buttonOffset.left;
+            startTop = buttonOffset.top;
+            
+            e.preventDefault();
+        });
+        
+        this.summaryButton.on('touchmove', (e) => {
+            if (!isDragging) return;
+            
+            if (!this.isDragging) {
+                this.isDragging = true;
+                this.summaryButton.addClass('dragging');
+            }
+            
+            const touch = e.originalEvent.touches[0];
+            
+            const deltaX = touch.pageX - startX;
+            const deltaY = touch.pageY - startY;
+            
+            const newLeft = startLeft + deltaX;
+            const newTop = startTop + deltaY;
+            
+            const maxLeft = $(window).width() - this.summaryButton.outerWidth();
+            const maxTop = $(window).height() - this.summaryButton.outerHeight();
+            
+            const constrainedLeft = Math.max(0, Math.min(newLeft, maxLeft));
+            const constrainedTop = Math.max(0, Math.min(newTop, maxTop));
+            
+            this.summaryButton.css({
+                'position': 'fixed',
+                'left': `${constrainedLeft}px`,
+                'top': `${constrainedTop}px`,
+                'right': 'auto',
+                'bottom': 'auto'
+            });
+            
+            e.preventDefault();
+        });
+        
+        this.summaryButton.on('touchend', (e) => {
+            this.summaryButton.removeClass('dragging');
+            
+            if (isDragging && this.isDragging) {
+                const finalOffset = this.summaryButton.offset();
+                game.settings.set('swade-summary', 'button-position-x', finalOffset.left);
+                game.settings.set('swade-summary', 'button-position-y', finalOffset.top);
+                game.settings.set('swade-summary', 'button-position', 'fixed');
+            }
+            
+            isDragging = false;
+            setTimeout(() => { this.isDragging = false; }, 100);
+            
+            e.preventDefault();
+        });
     }
     
     static async showSelectedCharactersSummary() {
