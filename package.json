@@ -1,0 +1,26 @@
+{
+  "name": "swade-summary",
+  "version": "1.0.0",
+  "description": "A Foundry VTT module for the SWADE (Savage Worlds Adventure Edition) system that provides a floating button to display summaries of selected characters' edges and hindrances.",
+  "main": "swade-summary.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LudoBermejoES/swade-summary.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LudoBermejoES/swade-summary/issues"
+  },
+  "homepage": "https://github.com/LudoBermejoES/swade-summary#readme",
+  "devDependencies": {
+    "jest": "^30.2.0"
+  }
+}

@@ -27,3 +27,9 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Test coverage
+coverage/
+
+# Package lock (optional for modules)
+package-lock.json
