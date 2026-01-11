@@ -18,8 +18,8 @@ Hooks.once('init', async function() {
     });
     
     game.settings.register('swade-summary', 'selected-characters', {
-        name: 'Selected Characters',
-        hint: 'Comma-separated list of character names or IDs to display in summary',
+        name: 'Additional Characters',
+        hint: 'Connected player characters are shown automatically. Use this to add extra characters (comma-separated names or IDs) like NPCs or absent player characters.',
         scope: 'world',
         config: true,
         type: String,
@@ -372,26 +372,44 @@ class SWADESummary {
     }
     
     static getSelectedCharacters() {
-        const selectedString = game.settings.get('swade-summary', 'selected-characters');
-        if (!selectedString.trim()) return [];
-        
-        const identifiers = selectedString.split(',').map(s => s.trim()).filter(s => s);
         const characters = [];
-        
-        for (const identifier of identifiers) {
-            // Try to find by ID first
-            let actor = game.actors.get(identifier);
-            
-            // If not found by ID, try by name
-            if (!actor) {
-                actor = game.actors.find(a => a.name.toLowerCase() === identifier.toLowerCase() && a.type === 'character');
-            }
-            
-            if (actor && actor.type === 'character') {
+        const addedIds = new Set();
+
+        // 1. First, add all characters from connected players (automatic)
+        const connectedPlayerCharacters = game.users
+            .filter(u => u.active && !u.isGM && u.character)
+            .map(u => u.character)
+            .filter(actor => actor.type === 'character');
+
+        for (const actor of connectedPlayerCharacters) {
+            if (!addedIds.has(actor.id)) {
                 characters.push(actor);
+                addedIds.add(actor.id);
             }
         }
-        
+
+        // 2. Then, add any additional "forced" characters from settings
+        const selectedString = game.settings.get('swade-summary', 'selected-characters');
+        if (selectedString.trim()) {
+            const identifiers = selectedString.split(',').map(s => s.trim()).filter(s => s);
+
+            for (const identifier of identifiers) {
+                // Try to find by ID first
+                let actor = game.actors.get(identifier);
+
+                // If not found by ID, try by name
+                if (!actor) {
+                    actor = game.actors.find(a => a.name.toLowerCase() === identifier.toLowerCase() && a.type === 'character');
+                }
+
+                // Add if valid and not already added
+                if (actor && actor.type === 'character' && !addedIds.has(actor.id)) {
+                    characters.push(actor);
+                    addedIds.add(actor.id);
+                }
+            }
+        }
+
         return characters;
     }
     

@@ -6,8 +6,8 @@
         "hint": "Enable summary functionality for SWADE characters"
       },
       "selected-characters": {
-        "name": "Selected Characters",
-        "hint": "Comma-separated list of character names or IDs to display in summary"
+        "name": "Additional Characters",
+        "hint": "Connected player characters are shown automatically. Use this to add extra characters (comma-separated names or IDs) like NPCs or absent player characters."
       },
       "button-position": {
         "name": "Button Position",
@@ -38,7 +38,7 @@
       "concept": "Concept",
       "close": "Close",
       "no-edges-hindrances": "No edges or hindrances",
-      "no-characters-selected": "No characters selected. Please configure character names/IDs in module settings.",
+      "no-characters-selected": "No characters to display. Connect players with assigned characters or add character names/IDs in module settings.",
       "styles": {
         "default": "Default",
         "supers": "Supers"
